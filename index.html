@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Detector de Rostros</title>
+  <link rel="shortcut icon" href="images/logo.png" />
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+  
+  </head>
+<style media="screen">
+canvas{
+  width: 100%;
+  height: auto;
+}
+body {
+      background-image: url("images/fondo.jpg");
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+  }
+  h1{
+    font-size: 48px;
+    color:black;
+    font-family: 'Roboto', sans-serif;
+  }
+</style>
+<body>
+<center>
+  <div class="container">
+    <h1> Detector de Rostros</h1>
+    <img src="images/bigote.png" id="bigote" style="display:none">
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <video id="video" width="800" height="600" autoplay style="display:none;"></video>
+    </center>
+    <div class="row container">
+    <div class="input-field col s12 m12 l6">
+      <div class="card-panel">
+      <i class="material-icons prefix">photo_camera</i>
+      <select class="custom-select" id="camera-selector"><option selected>Selecciona una cámara</option></select>
+    </div>
+    </div>
+    <div class="input-field col s12 m12 l6">
+      <div class="card-panel">
+      <i class="material-icons prefix">mic</i>
+      <select class="custom-select" id="audio-selector"><option selected>Selecciona un micrófono</option></select>
+      </div>
+  </div>
+  </div>
+  </div>
+
+</body>
+<script src="js/clmtrackr.js"></script>
+<script src="js/model_pca_20_svm.js"></script>
+<script  type="text/javascript">
+   $(document).ready(function() {
+    $('select').material_select();
+  });
+</script>
+<script type="text/javascript">
+  let video = document.getElementById('video');
+  let selectTag = document.getElementById('camera-selector');
+  let audioTag = document.getElementById('audio-selector');
+  let canvas = document.getElementById('canvas');
+  let bigote = document.getElementById('bigote');
+  let lentes = new Image();
+  let imageLoaded = false;
+  const context = canvas.getContext('2d');
+  var ctracker = new clm.tracker();
+  ctracker.init(pModel);
+  lentes.src= "images/lentes.png";
+  lentes.onload = function(){
+    imageLoaded = true;
+  }
+  navigator.mediaDevices.enumerateDevices().then(devices=>{
+  devices.forEach
+  devices.forEach(device=>{
+      if(device.kind != "videoinput") return;
+      let optionTag = document.createElement("option");
+      optionTag.innerHTML = device.label;
+      optionTag.value = device.deviceId;
+      selectTag.appendChild(optionTag);
+    })
+  });
+  navigator.mediaDevices.enumerateDevices().then(devices=>{
+  devices.forEach
+  devices.forEach(device=>{
+      if(device.kind != "audioinput") return;
+      let optionTag = document.createElement("option");
+      optionTag.innerHTML = device.label;
+      optionTag.value = device.deviceId;
+      audioTag.appendChild(optionTag);
+    })
+  });
+  audioTag.addEventListener("change", function(ev){
+    let deviceId = this.options[this.selectedIndex].value;
+    start(deviceId);
+  })
+  selectTag.addEventListener("change", function(ev){
+  let deviceId = this.options[this.selectedIndex].value;
+  start(deviceId);
+})
+  function start(deviceId = undefined){
+    var constraints =  {
+      video: {
+        facingMode:"user", 
+        deviceId:deviceId
+      },
+      audio: true
+    }
+    navigator.mediaDevices.getUserMedia(constraints)
+      .then(stream=> {
+        video.srcObject = stream;
+        setTimeout(function(){
+          ctracker.start(video);
+          requestAnimationFrame(loop);
+      },500)
+    })
+      .catch(err => console.log(err));
+}
+function drawImageRealTime(imagen,positions,modificadorWidth,modificadorHeight){
+  if(!positions.x.init || !positions.x.final || !positions.y.init || !positions.y.final)
+  return;
+  const x1 = positions.x.init[0] - modificadorWidth;
+  const x2 = positions.x.final[0] + modificadorWidth;
+
+  const y1 = positions.y.init[1] - modificadorHeight;
+  const y2 = positions.y.final[1] + modificadorHeight;
+
+  const width =  x2 - x1;
+  const height = y2 - y1;
+  context.drawImage(imagen, x1, y1, width, height);
+}
+function loop(){
+  context.drawImage (video,0,0,800,600);
+  //ctracker.draw(canvas);
+var positions = ctracker.getCurrentPosition();
+  if(imageLoaded)
+  drawImageRealTime(lentes,{
+    x:{
+      init: positions[0],
+      final: positions[14]
+    },
+    y:{
+      init: positions[33],
+      final: positions[41]
+    }
+  },0,10);
+  drawImageRealTime(bigote,{
+    x:{
+      init: positions[44],
+      final: positions[50]
+    },
+    y:{
+      init: positions[37],
+      final: positions[47]
+    }
+  },20,40);
+  requestAnimationFrame(loop);
+}
+start();
+</script>
+</html>
