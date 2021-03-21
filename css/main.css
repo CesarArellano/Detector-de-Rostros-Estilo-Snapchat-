@@ -1,0 +1,16 @@
+canvas{
+  width: 100%;
+  height: auto;
+}
+
+body {
+      background-image: url("../images/background.jpg");
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+}
+
+h1{
+  font-size: 48px;
+  color:black;
+  font-family: 'Roboto', sans-serif;
+}
