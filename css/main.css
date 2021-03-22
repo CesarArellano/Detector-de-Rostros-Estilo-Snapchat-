@@ -1,16 +1,30 @@
-canvas{
+body {
+  background-image: url("../images/background.jpg");
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+
+canvas {
   width: 100%;
   height: auto;
 }
 
-body {
-      background-image: url("../images/background.jpg");
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-}
-
-h1{
+h1 {
   font-size: 48px;
   color:black;
-  font-family: 'Roboto', sans-serif;
+}
+
+#bigote {
+  display: none;
+}
+
+/* Estilos de los select de Materialize */
+ul.dropdown-content.select-dropdown li span {
+  color:#1889ca;
+}
+
+.input-field input[type=text]:focus {
+  border-bottom: 1px solid #1889ca;
+  box-shadow: 0 1px 0 0 #1889ca;
 }
